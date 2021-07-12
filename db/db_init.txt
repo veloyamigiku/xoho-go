@@ -1,5 +1,4 @@
 mysql -u root -p --local-infile=1
-(mysqlでログインして初回のみ)
 set global local_infile=on;
 create database xoho;
 use xoho;
@@ -7,12 +6,50 @@ drop table if exists areas;
 create table areas(
     id int not null auto_increment primary key,
     name varchar(255),
-    sub varchar(255),
-    ord int);
-load data local infile "areas.csv" into table areas fields terminated by ',' optionally enclosed by '"';
+    sub varchar(255));
+load data local
+infile "areas.csv"
+into table areas
+fields terminated by ','
+optionally enclosed by '"';
+drop table if exists prefectures;
 create table prefectures(
     id int not null auto_increment primary key,
     name varchar(255),
+    sub varchar(255));
+load data local
+infile "prefectures.csv"
+into table prefectures
+fields terminated by ','
+optionally enclosed by '"';
+drop table if exists types;
+create table types(
+    id int not null auto_increment primary key,
+    name varchar(255),
+    title varchar(255),
     sub varchar(255),
-    ord int);
-load data local infile "prefectures.csv" into table prefectures fields terminated by ',' optionally enclosed by '"';
+    opt varchar(255),
+    icon_prefix varchar(255),
+    icon_class varchar(255));
+load data local
+infile "types.csv"
+into table types
+fields terminated by ','
+optionally enclosed by '"'
+ignore 1 lines
+(
+@name,
+@title,
+@sub,
+@opt,
+@icon_prefix,
+@icon_class
+)
+set
+name=@name,
+title=@title,
+sub=@sub,
+opt=@opt,
+icon_prefix=@icon_prefix,
+icon_class=@icon_class
+;
