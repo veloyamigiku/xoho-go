@@ -53,3 +53,49 @@ opt=@opt,
 icon_prefix=@icon_prefix,
 icon_class=@icon_class
 ;
+drop table if exists theaters;
+create table theaters(
+    id int not null auto_increment primary key,
+    name varchar(255),
+    sub varchar(255),
+    area_id int,
+    prefecture_id int,
+    url varchar(255));
+load data local
+infile "theaters.csv"
+into table theaters
+fields terminated by ','
+optionally enclosed by '"'
+ignore 1 lines
+(
+@name,
+@sub,
+@area,
+@prefecture,
+@url
+)
+set
+name=@name,
+sub=@sub,
+area_id=@area,
+prefecture_id=@prefecture,
+url=@url
+;
+drop table if exists theater_types;
+create table theater_types(
+    theater_id int,
+    type_id int);
+load data local
+infile "theater_types.csv"
+into table theater_types
+fields terminated by ','
+optionally enclosed by '"'
+ignore 1 lines
+(
+@type_id,
+@theater_id
+)
+set
+type_id=@type_id,
+theater_id=@theater_id
+;
