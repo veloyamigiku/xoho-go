@@ -11,7 +11,7 @@ import (
 
 func getTheaters(c echo.Context) error {
 	theaters := []Theater{}
-	database.DB.Debug().Model(&theaters).Preload("Type").Find(&theaters)
+	database.DB.Debug().Model(&theaters).Preload("Type").Preload("Area").Preload("Prefecture").Find(&theaters)
 	return c.JSON(http.StatusOK, theaters)
 }
 
