@@ -2,17 +2,28 @@ package main
 
 import (
 	"net/http"
+	"xoho-go/controller"
 	"xoho-go/database"
+	"xoho-go/model/json"
+	"xoho-go/service"
 
 	"github.com/labstack/echo/v4"
-
-	. "xoho-go/model"
 )
 
 func getTheaters(c echo.Context) error {
-	theaters := []Theater{}
-	database.DB.Debug().Model(&theaters).Preload("Type").Preload("Area").Preload("Prefecture").Find(&theaters)
-	return c.JSON(http.StatusOK, theaters)
+
+	var queryTheater controller.QueryTheater
+	if err := c.Bind(&queryTheater); err != nil {
+		panic(err)
+	}
+	res := []json.TheaterRes{}
+	switch queryTheater.Type {
+	case "all":
+		res = service.GetAllTheaters()
+	case "all_type":
+		res = service.GetAllTypeTheaters()
+	}
+	return c.JSON(http.StatusOK, res)
 }
 
 func main() {
