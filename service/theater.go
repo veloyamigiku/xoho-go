@@ -9,8 +9,77 @@ import (
 )
 
 func GetAllTheaters() []json.TheaterRes {
-	//theaters := repository.GetAllTheater()
+	theaters := repository.GetAllTheater()
+	sort.Sort(theaters)
+
 	theaterRes := []json.TheaterRes{}
+	theaterPrefecture := []json.TheaterPrefecture{}
+	theater := []json.Theater{}
+	//preArea := db.Area{}
+	var preArea *db.Area
+	preArea = nil
+	//prePrefecture := db.Prefecture{}
+	var prePrefecture *db.Prefecture
+	prePrefecture = nil
+	for _, t := range theaters {
+		if preArea != nil && (*preArea).Id != t.Area.Id {
+			theaterRes = append(
+				theaterRes,
+				json.TheaterRes{
+					Header: json.TheaterHeader{
+						Title:  preArea.Name,
+						Sub:    preArea.Sub,
+						Option: "",
+					},
+					Prefecture: theaterPrefecture,
+				},
+			)
+			theaterPrefecture = []json.TheaterPrefecture{}
+			theater = []json.Theater{}
+		} else if prePrefecture != nil && prePrefecture.Id != t.Prefecture.Id {
+			theaterPrefecture = append(
+				theaterPrefecture,
+				json.TheaterPrefecture{
+					Name:    prePrefecture.Name,
+					Sub:     prePrefecture.Sub,
+					Theater: theater,
+				},
+			)
+			theater = []json.Theater{}
+		}
+		theater = append(
+			theater,
+			convert.ConvertTheaterFromDbToJson(t))
+		//tmpArea := db.Area{}
+		tmpArea := t.Area
+		preArea = &tmpArea
+		tmpPrefecture := t.Prefecture
+		prePrefecture = &tmpPrefecture
+	}
+	if len(theaterPrefecture) > 0 {
+		if len(theater) > 0 {
+			theaterPrefecture = append(
+				theaterPrefecture,
+				json.TheaterPrefecture{
+					Name:    prePrefecture.Name,
+					Sub:     prePrefecture.Sub,
+					Theater: theater,
+				},
+			)
+		}
+		theaterRes = append(
+			theaterRes,
+			json.TheaterRes{
+				Header: json.TheaterHeader{
+					Title:  preArea.Name,
+					Sub:    preArea.Sub,
+					Option: "",
+				},
+				Prefecture: theaterPrefecture,
+			},
+		)
+	}
+
 	return theaterRes
 }
 
@@ -21,6 +90,7 @@ func GetAllTypeTheaters() []json.TheaterRes {
 		var theaterHeader *json.TheaterHeader = nil
 		prefectureIdTheatersMap := make(map[int][]db.Theater)
 		theaters := repository.GetTheaterWithTypeId(allTypeId)
+		sort.Sort(theaters)
 		for _, theater := range theaters {
 			// TheaterHeaderを作成する。
 			if theaterHeader == nil {
