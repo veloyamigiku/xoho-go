@@ -29,6 +29,27 @@ func getTheater(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
+func signUp(c echo.Context) error {
+
+	// POSTデータをパースする。
+	signupRes := json.SignupRes{
+		Status: true,
+	}
+	var signup json.Signup
+	if err := c.Bind(&signup); err != nil {
+		signupRes.Status = false
+		return c.JSON(http.StatusOK, signupRes)
+	}
+
+	err := service.SignUp(signup)
+	if err != nil {
+		signupRes.Status = false
+		return c.JSON(http.StatusOK, signupRes)
+	}
+
+	return c.JSON(http.StatusOK, signupRes)
+}
+
 func main() {
 	e := echo.New()
 	database.Connect()
@@ -36,5 +57,6 @@ func main() {
 	defer sqlDB.Close()
 
 	e.GET("/theaters", getTheater)
+	e.POST("/signup", signUp)
 	e.Logger.Fatal(e.Start(":3000"))
 }

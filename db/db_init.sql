@@ -99,3 +99,15 @@ set
 type_id=@type_id,
 theater_id=@theater_id
 ;
+drop table if exists users;
+create table users(
+    id int not null auto_increment primary key,
+    name varchar(255),
+    password varchar(255),
+    user_ext_id int
+);
+drop table if exists user_exts;
+create table user_exts(
+    id int not null auto_increment primary key,
+    auth_miss_count int
+);
