@@ -29,6 +29,26 @@ func getTheater(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
+func login(c echo.Context) error {
+
+	loginRes := json.LoginRes{
+		Status: true,
+	}
+	var login json.Login
+	if err := c.Bind(&login); err != nil {
+		loginRes.Status = false
+		return c.JSON(http.StatusOK, loginRes)
+	}
+
+	err := service.Login(login)
+	if err != nil {
+		loginRes.Status = false
+		return c.JSON(http.StatusOK, loginRes)
+	}
+
+	return c.JSON(http.StatusOK, loginRes)
+}
+
 func signUp(c echo.Context) error {
 
 	// POSTデータをパースする。
@@ -58,5 +78,6 @@ func main() {
 
 	e.GET("/theaters", getTheater)
 	e.POST("/signup", signUp)
+	e.POST("/login", login)
 	e.Logger.Fatal(e.Start(":3000"))
 }

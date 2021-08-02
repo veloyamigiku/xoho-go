@@ -5,6 +5,18 @@ import (
 	"xoho-go/model/db"
 )
 
+func FindUserWithName(name string) (user db.User, err error) {
+
+	result := database.
+		DB.
+		Debug().
+		Where("name = ?", name).
+		Joins("UserExt").
+		First(&user)
+	return user, result.Error
+
+}
+
 func ExistsUser(user *db.User) (bool, error) {
 
 	var users []db.User

@@ -7,9 +7,35 @@ import (
 	"xoho-go/model/db"
 	"xoho-go/model/json"
 	"xoho-go/model/repository"
+	"xoho-go/utils"
 
 	"gorm.io/gorm"
 )
+
+func Login(login json.Login) error {
+
+	err := database.DB.Transaction(func(tx *gorm.DB) error {
+
+		var err error
+		err = nil
+
+		user, findUserErr := repository.FindUserWithName(login.Name)
+		if findUserErr != nil {
+			err = fmt.Errorf("error: find user")
+			return err
+		}
+
+		hash := utils.HashPassword(login.Password)
+		trueHash := user.Password
+		if hash != trueHash {
+			err = fmt.Errorf("error: not equal password")
+			return err
+		}
+
+		return err
+	})
+	return err
+}
 
 func SignUp(signup json.Signup) error {
 
