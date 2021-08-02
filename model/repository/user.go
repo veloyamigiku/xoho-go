@@ -5,6 +5,26 @@ import (
 	"xoho-go/model/db"
 )
 
+func ExistsUser(user *db.User) (bool, error) {
+
+	var users []db.User
+	exists := false
+	result := database.
+		DB.
+		Debug().
+		Where(
+			"name = ?",
+			user.Name).
+		Find(&users)
+	if result.Error == nil {
+		if result.RowsAffected > 0 {
+			exists = true
+		}
+	}
+	return exists, result.Error
+
+}
+
 func AddUser(user *db.User) error {
 	tx := database.
 		DB.
