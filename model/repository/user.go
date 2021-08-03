@@ -5,6 +5,17 @@ import (
 	"xoho-go/model/db"
 )
 
+func UpdateAuthMissCount(userExt *db.UserExt, authMissCount int) error {
+
+	result := database.
+		DB.
+		Debug().
+		Model(&userExt).
+		Update("auth_miss_count", authMissCount)
+	return result.Error
+
+}
+
 func FindUserWithName(name string) (user db.User, err error) {
 
 	result := database.

@@ -12,27 +12,38 @@ import (
 	"gorm.io/gorm"
 )
 
-func Login(login json.Login) error {
+func Login(login json.Login) (err error) {
 
-	err := database.DB.Transaction(func(tx *gorm.DB) error {
-
-		var err error
-		err = nil
+	err = database.DB.Transaction(func(tx *gorm.DB) (txErr error) {
 
 		user, findUserErr := repository.FindUserWithName(login.Name)
 		if findUserErr != nil {
-			err = fmt.Errorf("error: find user")
-			return err
+			txErr = fmt.Errorf("error: find user")
+			return txErr
 		}
 
 		hash := utils.HashPassword(login.Password)
 		trueHash := user.Password
-		if hash != trueHash {
-			err = fmt.Errorf("error: not equal password")
-			return err
+		if hash == trueHash {
+			updateAuthMissCountErr := repository.UpdateAuthMissCount(
+				&(user.UserExt),
+				0)
+			if updateAuthMissCountErr != nil {
+				txErr = fmt.Errorf("error: update user(auth_miss_count)")
+				return txErr
+			}
+		} else {
+			updateAuthMissCountErr := repository.UpdateAuthMissCount(
+				&(user.UserExt),
+				user.UserExt.AuthMissCount+1)
+			if updateAuthMissCountErr != nil {
+				txErr = fmt.Errorf("error: update user(auth_miss_count)")
+				return txErr
+			}
+			txErr = fmt.Errorf("error: not equal password")
+			return txErr
 		}
-
-		return err
+		return txErr
 	})
 	return err
 }
