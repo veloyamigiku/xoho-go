@@ -22,6 +22,11 @@ func Login(login json.Login) (err error) {
 			return txErr
 		}
 
+		if user.UserExt.AuthMissCount >= 3 {
+			txErr = fmt.Errorf("error: user frozen")
+			return txErr
+		}
+
 		hash := utils.HashPassword(login.Password)
 		trueHash := user.Password
 		if hash == trueHash {
