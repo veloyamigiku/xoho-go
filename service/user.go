@@ -12,6 +12,10 @@ import (
 	"gorm.io/gorm"
 )
 
+func updatePassword(updatePassword json.UpdatePassword) (err error) {
+	return nil
+}
+
 func Login(login json.Login) (err error) {
 
 	err = database.DB.Transaction(func(tx *gorm.DB) (txErr error) {

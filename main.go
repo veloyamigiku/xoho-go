@@ -5,6 +5,7 @@ import (
 	"xoho-go/controller"
 	"xoho-go/database"
 	"xoho-go/model/json"
+	"xoho-go/model/json/enum"
 	"xoho-go/service"
 
 	"github.com/labstack/echo/v4"
@@ -27,6 +28,14 @@ func getTheater(c echo.Context) error {
 		res = service.GetAllTypeTheaters()
 	}
 	return c.JSON(http.StatusOK, res)
+}
+
+func updatePassword(c echo.Context) error {
+	updatePasswordRes := json.UpdatePasswordRes{
+		Status: true,
+		Code:   enum.NotEqualOldNew,
+	}
+	return c.JSON(http.StatusOK, updatePasswordRes)
 }
 
 func login(c echo.Context) error {
@@ -79,5 +88,6 @@ func main() {
 	e.GET("/theaters", getTheater)
 	e.POST("/signup", signUp)
 	e.POST("/login", login)
+	e.POST("/update_password", updatePassword)
 	e.Logger.Fatal(e.Start(":3000"))
 }
