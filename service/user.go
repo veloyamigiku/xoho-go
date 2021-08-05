@@ -4,33 +4,44 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"xoho-go/database"
+	"xoho-go/err"
 	"xoho-go/model/db"
 	"xoho-go/model/json"
+	"xoho-go/model/json/enum"
 	"xoho-go/model/repository"
 	"xoho-go/utils"
 
 	"gorm.io/gorm"
 )
 
-func UpdatePassword(updatePassword json.UpdatePassword) (err error) {
+func UpdatePassword(updatePassword json.UpdatePassword) (e error) {
 
-	err = database.DB.Transaction(func(tx *gorm.DB) (txErr error) {
+	e = database.DB.Transaction(func(tx *gorm.DB) (txErr error) {
 
 		user, findUserErr := repository.FindUserWithId(updatePassword.UserId)
 		if findUserErr != nil {
-			txErr = fmt.Errorf("error: user not exists")
+			txErr = &err.UpdatePasswordError{
+				Message: "error: user not exists",
+				Code:    enum.NotExistsUser,
+			}
 			return txErr
 		}
 
 		hashedOldPassword := utils.HashPassword(updatePassword.OldPassword)
 		if hashedOldPassword != user.Password {
-			txErr = fmt.Errorf("error: old password not equal")
+			txErr = &err.UpdatePasswordError{
+				Message: "error: old password not equal",
+				Code:    enum.NotEqualOld,
+			}
 			return txErr
 		}
 
 		hashedNewPassword := utils.HashPassword(updatePassword.NewPassword)
 		if hashedOldPassword == hashedNewPassword {
-			txErr = fmt.Errorf("error: old/new password equal")
+			txErr = &err.UpdatePasswordError{
+				Message: "error: old/new password equal",
+				Code:    enum.EqualOldNew,
+			}
 			return txErr
 		}
 
@@ -38,7 +49,10 @@ func UpdatePassword(updatePassword json.UpdatePassword) (err error) {
 			&user,
 			hashedNewPassword)
 		if updatePasswordErr != nil {
-			txErr = fmt.Errorf("error: update password")
+			txErr = &err.UpdatePasswordError{
+				Message: "error: update password",
+				Code:    enum.UpdateError,
+			}
 			return txErr
 		}
 
@@ -46,19 +60,22 @@ func UpdatePassword(updatePassword json.UpdatePassword) (err error) {
 			&(user.UserExt),
 			0)
 		if updateAuthMissCountErr != nil {
-			txErr = fmt.Errorf("error: update user(auth_miss_count)")
+			txErr = &err.UpdatePasswordError{
+				Message: "error: update user(auth_miss_count)",
+				Code:    enum.UpdateError,
+			}
 			return txErr
 		}
 
 		return txErr
 	})
 
-	return err
+	return e
 }
 
-func Login(login json.Login) (err error) {
+func Login(login json.Login) (e error) {
 
-	err = database.DB.Transaction(func(tx *gorm.DB) (txErr error) {
+	e = database.DB.Transaction(func(tx *gorm.DB) (txErr error) {
 
 		user, findUserErr := repository.FindUserWithName(login.Name)
 		if findUserErr != nil {
@@ -94,7 +111,7 @@ func Login(login json.Login) (err error) {
 		}
 		return txErr
 	})
-	return err
+	return e
 }
 
 func SignUp(signup json.Signup) error {

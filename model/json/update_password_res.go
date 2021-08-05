@@ -7,4 +7,5 @@ import (
 type UpdatePasswordRes struct {
 	Status bool                    `json:"status"`
 	Code   enum.UpdatePasswordCode `json:"code"`
+	Msg    string                  `json:"msg"`
 }

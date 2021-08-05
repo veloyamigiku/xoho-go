@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"xoho-go/controller"
 	"xoho-go/database"
+	"xoho-go/err"
 	"xoho-go/model/json"
 	"xoho-go/model/json/enum"
 	"xoho-go/service"
@@ -30,22 +31,29 @@ func getTheater(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-func updatePassword(c echo.Context) error {
+func updatePassword(c echo.Context) (e error) {
 
 	updatePasswordRes := json.UpdatePasswordRes{
 		Status: true,
 		Code:   enum.NoError,
+		Msg:    "",
 	}
 	var updatePassword json.UpdatePassword
-	if err := c.Bind(&updatePassword); err != nil {
+	if e = c.Bind(&updatePassword); e != nil {
 		updatePasswordRes.Status = false
 		updatePasswordRes.Code = enum.ParseParamError
-		return c.JSON(http.StatusOK, updatePassword)
+		updatePasswordRes.Msg = "error: parse param"
+		return c.JSON(http.StatusOK, updatePasswordRes)
 	}
 
-	err := service.UpdatePassword(updatePassword)
-	if err != nil {
+	e = service.UpdatePassword(updatePassword)
+	if e != nil {
 		updatePasswordRes.Status = false
+		if updatePasswordError, ok := e.(*err.UpdatePasswordError); ok {
+			updatePasswordRes.Code = updatePasswordError.Code
+			updatePasswordRes.Msg = updatePasswordError.Message
+		}
+		return c.JSON(http.StatusOK, updatePasswordRes)
 	}
 
 	return c.JSON(http.StatusOK, updatePasswordRes)
