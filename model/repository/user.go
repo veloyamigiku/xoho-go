@@ -5,6 +5,19 @@ import (
 	"xoho-go/model/db"
 )
 
+func UpdatePassword(
+	user *db.User,
+	password string) error {
+
+	result := database.
+		DB.
+		Debug().
+		Model(user).
+		Update("password", password)
+
+	return result.Error
+}
+
 func UpdateAuthMissCount(userExt *db.UserExt, authMissCount int) error {
 
 	result := database.
@@ -13,6 +26,17 @@ func UpdateAuthMissCount(userExt *db.UserExt, authMissCount int) error {
 		Model(&userExt).
 		Update("auth_miss_count", authMissCount)
 	return result.Error
+
+}
+
+func FindUserWithId(id int) (user db.User, err error) {
+
+	result := database.
+		DB.
+		Debug().
+		Joins("UserExt").
+		First(&user, id)
+	return user, result.Error
 
 }
 

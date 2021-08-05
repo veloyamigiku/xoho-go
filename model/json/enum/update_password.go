@@ -3,6 +3,8 @@ package enum
 type UpdatePasswordCode int
 
 const (
-	NotEqualOld UpdatePasswordCode = iota
-	NotEqualOldNew
+	NoError UpdatePasswordCode = iota
+	ParseParamError
+	NotEqualOld
+	EqualOldNew
 )

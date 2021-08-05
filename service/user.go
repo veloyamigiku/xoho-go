@@ -12,8 +12,48 @@ import (
 	"gorm.io/gorm"
 )
 
-func updatePassword(updatePassword json.UpdatePassword) (err error) {
-	return nil
+func UpdatePassword(updatePassword json.UpdatePassword) (err error) {
+
+	err = database.DB.Transaction(func(tx *gorm.DB) (txErr error) {
+
+		user, findUserErr := repository.FindUserWithId(updatePassword.UserId)
+		if findUserErr != nil {
+			txErr = fmt.Errorf("error: user not exists")
+			return txErr
+		}
+
+		hashedOldPassword := utils.HashPassword(updatePassword.OldPassword)
+		if hashedOldPassword != user.Password {
+			txErr = fmt.Errorf("error: old password not equal")
+			return txErr
+		}
+
+		hashedNewPassword := utils.HashPassword(updatePassword.NewPassword)
+		if hashedOldPassword == hashedNewPassword {
+			txErr = fmt.Errorf("error: old/new password equal")
+			return txErr
+		}
+
+		updatePasswordErr := repository.UpdatePassword(
+			&user,
+			hashedNewPassword)
+		if updatePasswordErr != nil {
+			txErr = fmt.Errorf("error: update password")
+			return txErr
+		}
+
+		updateAuthMissCountErr := repository.UpdateAuthMissCount(
+			&(user.UserExt),
+			0)
+		if updateAuthMissCountErr != nil {
+			txErr = fmt.Errorf("error: update user(auth_miss_count)")
+			return txErr
+		}
+
+		return txErr
+	})
+
+	return err
 }
 
 func Login(login json.Login) (err error) {

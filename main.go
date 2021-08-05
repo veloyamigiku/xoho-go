@@ -31,10 +31,23 @@ func getTheater(c echo.Context) error {
 }
 
 func updatePassword(c echo.Context) error {
+
 	updatePasswordRes := json.UpdatePasswordRes{
 		Status: true,
-		Code:   enum.NotEqualOldNew,
+		Code:   enum.NoError,
 	}
+	var updatePassword json.UpdatePassword
+	if err := c.Bind(&updatePassword); err != nil {
+		updatePasswordRes.Status = false
+		updatePasswordRes.Code = enum.ParseParamError
+		return c.JSON(http.StatusOK, updatePassword)
+	}
+
+	err := service.UpdatePassword(updatePassword)
+	if err != nil {
+		updatePasswordRes.Status = false
+	}
+
 	return c.JSON(http.StatusOK, updatePasswordRes)
 }
 
