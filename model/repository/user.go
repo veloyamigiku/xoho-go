@@ -52,6 +52,26 @@ func FindUserWithName(name string) (user db.User, err error) {
 
 }
 
+func DeleteUserExt(userExt *db.UserExt) error {
+
+	result := database.
+		DB.
+		Debug().
+		Delete(userExt)
+
+	return result.Error
+}
+
+func DeleteUser(user *db.User) error {
+
+	result := database.
+		DB.
+		Debug().
+		Delete(user)
+
+	return result.Error
+}
+
 func ExistsUser(user *db.User) (bool, error) {
 
 	var users []db.User

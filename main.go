@@ -59,6 +59,35 @@ func updatePassword(c echo.Context) (e error) {
 	return c.JSON(http.StatusOK, updatePasswordRes)
 }
 
+func resign(c echo.Context) error {
+
+	resignRes := json.ResignRes{
+		Status: true,
+		Code:   enum.ResignCodeNoError,
+		Msg:    "",
+	}
+
+	var resign json.Resign
+	if parseErr := c.Bind(&resign); parseErr != nil {
+		resignRes.Status = false
+		resignRes.Code = enum.ResignCodeParseParamError
+		resignRes.Msg = "error: parse param."
+		return c.JSON(http.StatusOK, resignRes)
+	}
+
+	serivceErr := service.Resign(resign)
+	if serivceErr != nil {
+		resignRes.Status = false
+		if resignErr, ok := serivceErr.(*err.ResignError); ok {
+			resignRes.Code = resignErr.Code
+			resignRes.Msg = resignErr.Message
+			return c.JSON(http.StatusOK, resignRes)
+		}
+	}
+
+	return c.JSON(http.StatusOK, resignRes)
+}
+
 func login(c echo.Context) error {
 
 	loginRes := json.LoginRes{
@@ -110,5 +139,6 @@ func main() {
 	e.POST("/signup", signUp)
 	e.POST("/login", login)
 	e.POST("/update_password", updatePassword)
+	e.POST("/resign", resign)
 	e.Logger.Fatal(e.Start(":3000"))
 }

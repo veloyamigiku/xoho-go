@@ -73,6 +73,43 @@ func UpdatePassword(updatePassword json.UpdatePassword) (e error) {
 	return e
 }
 
+func Resign(resign json.Resign) (e error) {
+
+	e = database.DB.Transaction(func(tx *gorm.DB) (txErr error) {
+
+		user, findUserErr := repository.FindUserWithId(resign.UserId)
+		if findUserErr != nil {
+			txErr = &err.ResignError{
+				Code:    enum.ResignCodeNotExistsUser,
+				Message: "error: not exists user",
+			}
+			return txErr
+		}
+
+		deleteUserExtErr := repository.DeleteUserExt(&user.UserExt)
+		if deleteUserExtErr != nil {
+			txErr = &err.ResignError{
+				Code:    enum.ResignCodeDbError,
+				Message: "error: delete user_ext",
+			}
+			return txErr
+		}
+
+		deleteUserErr := repository.DeleteUser(&user)
+		if deleteUserErr != nil {
+			txErr = &err.ResignError{
+				Code:    enum.ResignCodeDbError,
+				Message: "error: delete user",
+			}
+			return txErr
+		}
+
+		return txErr
+	})
+
+	return e
+}
+
 func Login(login json.Login) (e error) {
 
 	e = database.DB.Transaction(func(tx *gorm.DB) (txErr error) {
