@@ -11,11 +11,12 @@ import (
 
 var DB *gorm.DB
 
-func Connect() {
+func Connect(envDir string) {
 	if os.Getenv("GO_ENV") == "" {
 		os.Setenv("GO_ENV", "development")
 	}
-	err := godotenv.Load(fmt.Sprintf(".env.%s", os.Getenv("GO_ENV")))
+
+	err := godotenv.Load(fmt.Sprintf("%s/.env.%s", envDir, os.Getenv("GO_ENV")))
 	if err != nil {
 		panic(err.Error())
 	}

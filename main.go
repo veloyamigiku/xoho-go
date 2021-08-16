@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+	"os"
 	"xoho-go/controller"
 	"xoho-go/database"
 	"xoho-go/err"
@@ -131,7 +132,8 @@ func signUp(c echo.Context) error {
 
 func main() {
 	e := echo.New()
-	database.Connect()
+	curDir, _ := os.Getwd()
+	database.Connect(curDir)
 	sqlDB, _ := database.DB.DB()
 	defer sqlDB.Close()
 
