@@ -175,19 +175,19 @@ func SignUp(signup json.Signup) error {
 			return err
 		}
 
-		addUserErr := repository.AddUser(user)
+		addUserErr := repository.AddUser(tx, user)
 		if addUserErr != nil {
 			err = fmt.Errorf("error: add user")
 			return err
 		}
 
-		addUserExtErr := repository.AddUserExt(userExt)
+		addUserExtErr := repository.AddUserExt(tx, userExt)
 		if addUserExtErr != nil {
 			err = fmt.Errorf("error: add user_ext")
 			return err
 		}
 
-		addAssociationErr := repository.AddAssociation(user, userExt)
+		addAssociationErr := repository.AddAssociation(tx, user, userExt)
 		if addAssociationErr != nil {
 			err = fmt.Errorf("error: update user_association")
 			return err
@@ -197,4 +197,58 @@ func SignUp(signup json.Signup) error {
 	})
 
 	return err
+}
+
+func SignUp2(signup json.Signup) (int, error) {
+	var user_id int
+	err := database.DB.Transaction(func(tx *gorm.DB) error {
+		tmp_user_id, e := _signup2(tx, signup)
+		user_id = tmp_user_id
+		return e
+	})
+	return user_id, err
+}
+
+func _signup2(tx *gorm.DB, signup json.Signup) (int, error) {
+
+	userExt := &db.UserExt{
+		AuthMissCount: 0,
+	}
+	hash := fmt.Sprintf("%x", sha256.Sum256([]byte(signup.Password)))
+
+	user := &db.User{
+		Name:     signup.Name,
+		Password: hash,
+		UserExt:  *userExt,
+	}
+
+	var err error
+	err = nil
+
+	exists, existsUserErr := repository.ExistsUser(user)
+	if existsUserErr != nil || exists {
+		err = fmt.Errorf("error: exists user")
+		return -1, err
+	}
+
+	addUserErr := repository.AddUser(tx, user)
+	if addUserErr != nil {
+		err = fmt.Errorf("error: add user")
+		return -1, err
+	}
+
+	addUserExtErr := repository.AddUserExt(tx, userExt)
+	if addUserExtErr != nil {
+		err = fmt.Errorf("error: add user_ext")
+		return -1, err
+	}
+
+	addAssociationErr := repository.AddAssociation(tx, user, userExt)
+	if addAssociationErr != nil {
+		err = fmt.Errorf("error: update user_association")
+		return -1, err
+	}
+
+	return user.Id, err
+
 }

@@ -3,11 +3,14 @@ package repository
 import (
 	"xoho-go/database"
 	"xoho-go/model/db"
+
+	"gorm.io/gorm"
 )
 
 func UpdatePassword(
 	user *db.User,
-	password string) error {
+	password string,
+) error {
 
 	result := database.
 		DB.
@@ -92,25 +95,29 @@ func ExistsUser(user *db.User) (bool, error) {
 
 }
 
-func AddUser(user *db.User) error {
-	tx := database.
-		DB.
+func AddUser(
+	db *gorm.DB,
+	user *db.User) error {
+	tx := db.
 		Debug().
 		Create(user)
 	return tx.Error
 }
 
-func AddUserExt(userExt *db.UserExt) error {
-	tx := database.
-		DB.
+func AddUserExt(
+	db *gorm.DB,
+	userExt *db.UserExt) error {
+	tx := db.
 		Debug().
 		Create(userExt)
 	return tx.Error
 }
 
-func AddAssociation(user *db.User, userExt *db.UserExt) error {
-	return database.
-		DB.
+func AddAssociation(
+	db *gorm.DB,
+	user *db.User,
+	userExt *db.UserExt) error {
+	return db.
 		Debug().
 		Model(user).
 		Association("UserExt").
