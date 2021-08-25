@@ -121,7 +121,7 @@ func signUp(c echo.Context) error {
 		return c.JSON(http.StatusOK, signupRes)
 	}
 
-	err := service.SignUp(signup)
+	_, err := service.SignUp2(signup)
 	if err != nil {
 		signupRes.Status = false
 		return c.JSON(http.StatusOK, signupRes)
@@ -131,12 +131,13 @@ func signUp(c echo.Context) error {
 }
 
 func main() {
-	e := echo.New()
+
 	curDir, _ := os.Getwd()
 	database.Connect(curDir)
 	sqlDB, _ := database.DB.DB()
 	defer sqlDB.Close()
 
+	e := echo.New()
 	e.GET("/theaters", getTheater)
 	e.POST("/signup", signUp)
 	e.POST("/login", login)

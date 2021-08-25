@@ -2,6 +2,7 @@ package service
 
 import (
 	"crypto/sha256"
+	"errors"
 	"fmt"
 	"xoho-go/database"
 	"xoho-go/err"
@@ -201,11 +202,19 @@ func SignUp(signup json.Signup) error {
 
 func SignUp2(signup json.Signup) (int, error) {
 	var user_id int
+	var orgErr error
 	err := database.DB.Transaction(func(tx *gorm.DB) error {
 		tmp_user_id, e := _signup2(tx, signup)
 		user_id = tmp_user_id
+		orgErr = e
+		if utils.IsTest() {
+			return errors.New("rollback Signup2 for Test")
+		}
 		return e
 	})
+	if utils.IsTest() {
+		return user_id, orgErr
+	}
 	return user_id, err
 }
 
