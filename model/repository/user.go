@@ -8,12 +8,12 @@ import (
 )
 
 func UpdatePassword(
+	db *gorm.DB,
 	user *db.User,
 	password string,
 ) error {
 
-	result := database.
-		DB.
+	result := db.
 		Debug().
 		Model(user).
 		Update("password", password)
@@ -21,10 +21,12 @@ func UpdatePassword(
 	return result.Error
 }
 
-func UpdateAuthMissCount(userExt *db.UserExt, authMissCount int) error {
+func UpdateAuthMissCount(
+	db *gorm.DB,
+	userExt *db.UserExt,
+	authMissCount int) error {
 
-	result := database.
-		DB.
+	result := db.
 		Debug().
 		Model(&userExt).
 		Update("auth_miss_count", authMissCount)
@@ -32,10 +34,13 @@ func UpdateAuthMissCount(userExt *db.UserExt, authMissCount int) error {
 
 }
 
-func FindUserWithId(id int) (user db.User, err error) {
+func FindUserWithId(
+	db *gorm.DB,
+	id int) (
+	user db.User,
+	err error) {
 
-	result := database.
-		DB.
+	result := db.
 		Debug().
 		Joins("UserExt").
 		First(&user, id)
