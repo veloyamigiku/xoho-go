@@ -28,7 +28,8 @@ func UpdateAuthMissCount(
 
 	result := db.
 		Debug().
-		Model(&userExt).
+		Model(userExt).
+		Where("Id = ?", userExt.Id).
 		Update("auth_miss_count", authMissCount)
 	return result.Error
 
