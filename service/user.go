@@ -174,7 +174,9 @@ func Resign(resign json.Resign) (e error) {
 			return txErr
 		}
 
-		deleteUserExtErr := repository.DeleteUserExt(&user.UserExt)
+		deleteUserExtErr := repository.DeleteUserExt(
+			tx,
+			&user.UserExt)
 		if deleteUserExtErr != nil {
 			txErr = &err.ResignError{
 				Code:    enum.ResignCodeDbError,
@@ -183,7 +185,9 @@ func Resign(resign json.Resign) (e error) {
 			return txErr
 		}
 
-		deleteUserErr := repository.DeleteUser(&user)
+		_, deleteUserErr := repository.DeleteUser(
+			tx,
+			&user)
 		if deleteUserErr != nil {
 			txErr = &err.ResignError{
 				Code:    enum.ResignCodeDbError,
@@ -202,7 +206,9 @@ func Login(login json.Login) (e error) {
 
 	e = database.DB.Transaction(func(tx *gorm.DB) (txErr error) {
 
-		user, findUserErr := repository.FindUserWithName(login.Name)
+		user, findUserErr := repository.FindUserWithName(
+			tx,
+			login.Name)
 		if findUserErr != nil {
 			txErr = fmt.Errorf("error: find user")
 			return txErr
@@ -275,7 +281,9 @@ func _signup2(tx *gorm.DB, signup json.Signup) (int, error) {
 	var err error
 	err = nil
 
-	exists, existsUserErr := repository.ExistsUser(user)
+	exists, existsUserErr := repository.ExistsUser(
+		tx,
+		user)
 	if existsUserErr != nil || exists {
 		err = fmt.Errorf("error: exists user")
 		return -1, err

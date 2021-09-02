@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"xoho-go/database"
 	"xoho-go/model/db"
 
 	"gorm.io/gorm"
@@ -49,10 +48,11 @@ func FindUserWithId(
 
 }
 
-func FindUserWithName(name string) (user db.User, err error) {
+func FindUserWithName(
+	db *gorm.DB,
+	name string) (user db.User, err error) {
 
-	result := database.
-		DB.
+	result := db.
 		Debug().
 		Where("name = ?", name).
 		Joins("UserExt").
@@ -61,32 +61,36 @@ func FindUserWithName(name string) (user db.User, err error) {
 
 }
 
-func DeleteUserExt(userExt *db.UserExt) error {
+func DeleteUserExt(
+	db *gorm.DB,
+	userExt *db.UserExt) error {
 
-	result := database.
-		DB.
+	result := db.
 		Debug().
+		Where("Id = ?", userExt.Id).
 		Delete(userExt)
 
 	return result.Error
 }
 
-func DeleteUser(user *db.User) error {
+func DeleteUser(
+	db *gorm.DB,
+	user *db.User) (int64, error) {
 
-	result := database.
-		DB.
+	result := db.
 		Debug().
+		Where("Id = ?", user.Id).
 		Delete(user)
-
-	return result.Error
+	return result.RowsAffected, result.Error
 }
 
-func ExistsUser(user *db.User) (bool, error) {
+func ExistsUser(
+	tx *gorm.DB,
+	user *db.User) (bool, error) {
 
 	var users []db.User
 	exists := false
-	result := database.
-		DB.
+	result := tx.
 		Debug().
 		Where(
 			"name = ?",
