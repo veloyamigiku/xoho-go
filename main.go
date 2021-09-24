@@ -25,7 +25,11 @@ func getTheater(c echo.Context) error {
 	// クエリ文字列の項目(type)で条件分岐する。
 	switch queryTheater.Type {
 	case "all":
-		res = service.GetAllTheaters()
+		res, getAllTheatersErr := service.GetAllTheaters()
+		if getAllTheatersErr != nil {
+			return c.JSON(http.StatusOK, res)
+		}
+		return c.JSON(http.StatusOK, res)
 	case "all_type":
 		res = service.GetAllTypeTheaters()
 	}

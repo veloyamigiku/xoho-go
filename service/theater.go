@@ -1,15 +1,28 @@
 package service
 
 import (
+	"errors"
 	"sort"
+	"xoho-go/database"
 	"xoho-go/model/convert"
 	"xoho-go/model/db"
 	"xoho-go/model/json"
 	"xoho-go/model/repository"
+	"xoho-go/utils"
+
+	"gorm.io/gorm"
 )
 
-func GetAllTheaters() []json.TheaterRes {
-	theaters := repository.GetAllTheater()
+func _getAllTheaters(tx *gorm.DB) ([]json.TheaterRes, error) {
+
+	var e error
+	e = nil
+
+	theaters, getAllTheaterErr := repository.GetAllTheater(tx)
+	if getAllTheaterErr != nil {
+		e = errors.New("error: GetAllTheater's DB Error")
+		return nil, e
+	}
 	sort.Sort(theaters)
 
 	theaterRes := []json.TheaterRes{}
@@ -79,8 +92,25 @@ func GetAllTheaters() []json.TheaterRes {
 			},
 		)
 	}
+	return theaterRes, e
+}
 
-	return theaterRes
+func GetAllTheaters() ([]json.TheaterRes, error) {
+	var theaterRes []json.TheaterRes
+	var orgErr error
+	err := database.DB.Transaction(func(tx *gorm.DB) error {
+		tmpTheaterRes, e := _getAllTheaters(tx)
+		theaterRes = tmpTheaterRes
+		orgErr = e
+		if utils.IsTest() {
+			return errors.New("rollback GetAllTheaters for Test")
+		}
+		return e
+	})
+	if utils.IsTest() {
+		return theaterRes, orgErr
+	}
+	return theaterRes, err
 }
 
 func GetAllTypeTheaters() []json.TheaterRes {

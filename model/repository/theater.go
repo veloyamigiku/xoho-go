@@ -3,6 +3,8 @@ package repository
 import (
 	"xoho-go/database"
 	"xoho-go/model/db"
+
+	"gorm.io/gorm"
 )
 
 func GetTheaterWithTypeId(typeId int) db.TheaterByAreaPref {
@@ -20,15 +22,14 @@ func GetTheaterWithTypeId(typeId int) db.TheaterByAreaPref {
 	return theaters
 }
 
-func GetAllTheater() db.TheaterByAreaPref {
-	theaters := db.TheaterByAreaPref{}
-	database.
-		DB.
+func GetAllTheater(tx *gorm.DB) (theaters db.TheaterByAreaPref, err error) {
+	result := tx.
 		Debug().
 		Model(&theaters).
 		Preload("Type").
 		Joins("Prefecture").
 		Joins("Area").
 		Find(&theaters)
-	return theaters
+	err = result.Error
+	return
 }
